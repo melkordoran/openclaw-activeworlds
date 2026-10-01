@@ -16,9 +16,10 @@ OpenClaw and .NET dependencies retain their respective upstream licenses.
 No official Activeworlds SDK DLL, import library, Linux shared library, account
 credentials, or deployment logs are included.
 
-## Project license decision
+## Project license
 
-No license has been selected for the original bridge/plugin code yet.
-`UNLICENSED` and `private: true` prevent accidental npm publication and do not
-grant an open-source license. Choose a license before public release. This does
-not change the independent licensing of the upstream submodules.
+Copyright (c) 2026 Phillip Gardner. The original bridge/plugin code and
+project-authored supporting files are licensed under AGPL-3.0-only; see
+[LICENSE](LICENSE). This does not relicense the upstream SDK, its submodules,
+or other third-party dependencies. The package manifests retain `private: true`
+to prevent accidental npm publication, not to restrict source visibility.

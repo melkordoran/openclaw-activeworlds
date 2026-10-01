@@ -155,5 +155,7 @@ This is a source checkout, not an npm-ready standalone plugin bundle. Local
 credentials, native binaries, logs, generated dependencies, and diagnostic
 reference-server clones are excluded. No GitHub remote is assumed.
 
-The original integration's release license is **not yet selected**; consult
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before public distribution.
+The original bridge and plugin code is licensed under **AGPL-3.0-only**.
+See [LICENSE](LICENSE). Copyright (c) 2026 Phillip Gardner.
+Third-party components retain their own licenses; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

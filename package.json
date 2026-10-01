@@ -2,7 +2,7 @@
   "name": "openclaw-activeworlds-source",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-only",
   "description": "Source workspace for the OpenClaw Activeworlds messaging channel",
   "engines": {"node": ">=24"},
   "scripts": {
