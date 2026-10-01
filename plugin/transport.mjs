@@ -42,6 +42,7 @@ export class Transport {
     this.log = log;
     this.visit = randomUUID();
     this.pending = new Map();
+    this.sendStats = {completedMessages: 0, failedMessages: 0, sdkAcceptedChunks: 0, lastFailure: null};
     this.state = null;
     this.sendLane = Promise.resolve();
     this.closed = new Promise(resolve => { this.resolveClosed = resolve; });
@@ -109,13 +110,30 @@ export class Transport {
     target.visit ??= this.visit;
     target.epoch ??= this.state.epoch;
     const action = async () => {
-      for (const part of chunks(text)) {
-        signal?.throwIfAborted(); this.assertTarget(target);
-        await this.command({op: target.private ? 'whisper' : 'say', world: this.state.world,
-          epoch: target.epoch, chatChannel: target.chatChannel, session: target.session, text: part});
-        await new Promise(resolve => setTimeout(resolve, 200));
+      const parts = chunks(text);
+      let acceptedChunks = 0;
+      let attemptedChunks = 0;
+      try {
+        for (const part of parts) {
+          signal?.throwIfAborted(); this.assertTarget(target);
+          attemptedChunks += 1;
+          await this.command({op: target.private ? 'whisper' : 'say', world: this.state.world,
+            epoch: target.epoch, chatChannel: target.chatChannel, session: target.session, text: part});
+          acceptedChunks += 1;
+          this.sendStats.sdkAcceptedChunks += 1;
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        this.sendStats.completedMessages += 1;
+        return {channel: 'activeworlds', messageId: `sdk-accepted-${randomUUID()}`, chatId: to};
+      } catch (cause) {
+        const details = {at: Date.now(), acceptedChunks, attemptedChunks, totalChunks: parts.length,
+          deliveryUncertain: attemptedChunks > 0};
+        this.sendStats.failedMessages += 1;
+        this.sendStats.lastFailure = details;
+        const error = new Error(`Activeworlds send failed (${acceptedChunks}/${parts.length} chunks SDK-accepted; delivery ${details.deliveryUncertain ? 'uncertain' : 'not attempted'}): ${cause.message}`, {cause});
+        Object.assign(error, details);
+        throw error;
       }
-      return {channel: 'activeworlds', messageId: `sdk-accepted-${randomUUID()}`, chatId: to};
     };
     const result = this.sendLane.then(action);
     this.sendLane = result.catch(() => {});

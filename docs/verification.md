@@ -40,6 +40,11 @@ a full supported gateway restart, then verify a fresh human message/reply pair.
 proof of correct labeling. SDK acceptance of outgoing text likewise is not
 recipient-side delivery proof.
 
-Reconnect under a real network fault, replay/durability, universal world support,
-and the exported GitHub Actions workflow remain unproven. The wrapper has no
+Offline fault tests terminate a fake bridge subprocess, verify pending RPC
+rejection, start a replacement, and verify stale-target rejection plus fresh
+sends. Partial-send and cancellation tests verify uncertainty reporting and
+non-replay. These tests do not exercise an actual AW network outage.
+
+The initial GitHub Actions workflow passed after publication. Reconnect under a
+real network fault, replay/durability, and universal world support remain unproven. The wrapper has no
 durable queue; unexpected disconnects rely on OpenClaw's channel supervisor.

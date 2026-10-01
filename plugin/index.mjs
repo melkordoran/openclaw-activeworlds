@@ -170,7 +170,8 @@ export default defineChannelPluginEntry({
       visit: current?.visit, epoch: current?.state?.epoch, chatChannels: current?.state?.chatChannels ?? [1]}));
     register('diagnostics', 'operator.read', async () => {
       const t = active();
-      return {...await t.command({op: 'diagnostics'}), visit: t.visit};
+      return {...await t.command({op: 'diagnostics'}), visit: t.visit,
+        transport: {...t.sendStats, lastFailure: t.sendStats.lastFailure ? {...t.sendStats.lastFailure} : null}};
     });
     for (const op of ['look', 'move']) {
       register(op, op === 'look' ? 'operator.read' : 'operator.write', p => {

@@ -69,3 +69,13 @@ No message text, avatar names, account settings, credentials, or recipient IDs
 are returned. An empty activity timestamp is null, not zero. Requested channels
 are not a server acknowledgment; accepted sends are not recipient delivery
 receipts. This is bridge-level telemetry, not agent-response health.
+
+Transport diagnostics additionally report `completedMessages`, `failedMessages`,
+`sdkAcceptedChunks`, and a content-free `lastFailure` record. These cover sends
+that reached the serialized send queue (invalid targets rejected at admission
+are not counted). Completed means all chunks received SDK acceptance, not
+recipient confirmation. Failure records include attempted/accepted/total chunks
+and `deliveryUncertain`: an attempted RPC may have sent text even when its
+response was lost. No failed send is automatically replayed. A subsequent fresh
+send can proceed; queued old-visit sends still fail their visit guards. Counters
+reset when the transport is replaced.
