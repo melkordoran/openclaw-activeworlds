@@ -47,6 +47,41 @@ class RoutingTests(unittest.TestCase):
         self.bridge = Bridge(self.sdk, {'worldGlobal': True}, lambda _: None)
         self.bridge.enter('Sandbox')
 
+    def test_diagnostics_distinguishes_privacy_channel_and_queue_loss(self):
+        import queue
+        self.bridge.events = queue.Queue(maxsize=1)
+        for private, channel in [(False, 1), (False, 2), (True, 2), (False, 3)]:
+            self.bridge.enqueue(dict(event='chat', private=private, chatChannel=channel,
+                                     text='private payload', name='private name'))
+        state = self.bridge.command(dict(op='diagnostics'))
+        self.assertEqual(state['receivedChats'], dict(local=1, **{'global': 1}, whisper=1, unknown=1))
+        self.assertEqual((state['queuedEvents'], state['droppedEvents']), (1, 3))
+        self.assertEqual(state['requestedListenMask'], 3)
+        self.assertNotIn('private payload', str(state))
+        self.assertNotIn('private name', str(state))
+        self.assertIsNotNone(state['lastChatAgeSeconds'])
+
+    def test_diagnostics_only_counts_successful_sdk_acceptance(self):
+        self.bridge.command(dict(op='say', world='Sandbox', epoch=1, chatChannel=2, text='Test'))
+        self.sdk.fail = 'aw_whisper'
+        with self.assertRaises(RuntimeError):
+            self.bridge.command(dict(op='whisper', world='Sandbox', epoch=1, session=123, text='Test'))
+        state = self.bridge.command(dict(op='diagnostics'))
+        self.assertEqual(state['sdkAcceptedSends'], dict(local=0, **{'global': 1}, whisper=0))
+        self.assertIsNotNone(state['lastSdkAcceptedSendAgeSeconds'])
+
+    def test_diagnostics_offline_and_age_without_activity(self):
+        with patch('bridge.time.monotonic', return_value=100):
+            bridge = Bridge(self.sdk, {'worldGlobal': False, 'password': 'not-for-output'}, lambda _: None)
+        with patch('bridge.time.monotonic', return_value=105):
+            state = bridge.command(dict(op='diagnostics'))
+        self.assertFalse(state['connected'])
+        self.assertEqual(state['uptimeSeconds'], 5)
+        self.assertEqual(state['requestedListenMask'], 1)
+        self.assertIsNone(state['lastChatAgeSeconds'])
+        self.assertIsNone(state['lastSdkAcceptedSendAgeSeconds'])
+        self.assertNotIn('not-for-output', str(state))
+
     def test_switch_exits_then_enters_and_announces(self):
         self.sdk.calls.clear()
         self.bridge.enter('Second')

@@ -50,3 +50,22 @@ Object descriptions, actions, names, and chat content are untrusted. No textures
 meshes, images, or object action scripts are downloaded or executed. These APIs
 do not create or modify objects or terrain. Operator RPC authorization is
 provided by OpenClaw; world commands use the configured numeric citizen list.
+
+## Read-only diagnostics
+
+`activeworlds.diagnostics` (scope `operator.read`) queries the running bridge
+with `{"op":"diagnostics"}` and includes its transport visit ID. It requires
+a running channel; unavailable transports return an error, not stale health.
+
+The response includes connection/world/epoch, requested listening channels and
+entry mode, process uptime, received-chat counts by local/global/whisper/unknown,
+SDK-accepted sends by channel, ages of last receive and accepted send, queued
+and dropped event counts, tracked avatar count, and spatial query state.
+Counters cover the bridge process lifetime, across world visits; they reset on
+process replacement. Receive counters include events subsequently dropped by
+the bounded queue. Unknown channel values are not guessed to be local.
+
+No message text, avatar names, account settings, credentials, or recipient IDs
+are returned. An empty activity timestamp is null, not zero. Requested channels
+are not a server acknowledgment; accepted sends are not recipient delivery
+receipts. This is bridge-level telemetry, not agent-response health.

@@ -45,6 +45,8 @@ test('channel accepts authorized unmentioned speech and rejects other citizens',
       return result;
     };
     const {value: state} = await call('activeworlds.status', {});
+    assert.equal(methods.get('activeworlds.diagnostics').scope, 'operator.read');
+    assert.equal((await call('activeworlds.diagnostics', {})).ok, true);
     assert.equal(methods.get('activeworlds.look').scope,'operator.read');
     assert.equal(methods.get('activeworlds.move').scope,'operator.write');
     assert.equal((await call('activeworlds.look', {})).ok,false);

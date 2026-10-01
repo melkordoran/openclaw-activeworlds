@@ -168,6 +168,10 @@ export default defineChannelPluginEntry({
     }, {scope});
     register('status', 'operator.read', () => ({connected: Boolean(current?.state?.connected), world: current?.state?.world,
       visit: current?.visit, epoch: current?.state?.epoch, chatChannels: current?.state?.chatChannels ?? [1]}));
+    register('diagnostics', 'operator.read', async () => {
+      const t = active();
+      return {...await t.command({op: 'diagnostics'}), visit: t.visit};
+    });
     for (const op of ['look', 'move']) {
       register(op, op === 'look' ? 'operator.read' : 'operator.write', p => {
         const t = active();

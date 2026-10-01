@@ -189,6 +189,12 @@ class Bridge:
         self.query_state = None
         self.query_pending = False
         self.last_state_change = 0
+        self.started_at = time.monotonic()
+        self.last_chat_at = None
+        self.last_send_at = None
+        self.received = dict(local=0, global_=0, whisper=0, unknown=0)
+        self.sdk_accepted = dict(local=0, global_=0, whisper=0)
+        self.dropped_events = 0
 
     def resolve_citizen(self, session, reported):
         known = self.avatar_citizens.get(session, 0)
@@ -209,8 +215,26 @@ class Bridge:
         return event
 
     def enqueue(self, event):
+        if event.get('event') == 'chat':
+            kind = 'whisper' if event.get('private') else {1: 'local', 2: 'global_'}.get(event.get('chatChannel'), 'unknown')
+            self.received[kind] += 1
+            self.last_chat_at = time.monotonic()
         try: self.events.put_nowait(event)
-        except queue.Full: pass
+        except queue.Full: self.dropped_events += 1
+
+    def diagnostics(self):
+        now = time.monotonic()
+        age = lambda stamp: None if stamp is None else round(max(0, now - stamp), 3)
+        channels = [1, 2] if self.settings.get('worldGlobal') else [1]
+        counts = lambda values: {('global' if key == 'global_' else key): value for key, value in values.items()}
+        return dict(world=self.world, epoch=self.epoch, connected=self.connected,
+                    requestedChatChannels=channels, requestedListenMask=sum(channels),
+                    requestedEnterGlobal=bool(self.settings.get('worldGlobal')),
+                    uptimeSeconds=age(self.started_at), lastChatAgeSeconds=age(self.last_chat_at),
+                    lastSdkAcceptedSendAgeSeconds=age(self.last_send_at),
+                    receivedChats=counts(self.received), sdkAcceptedSends=counts(self.sdk_accepted),
+                    queuedEvents=self.events.qsize(), droppedEvents=self.dropped_events,
+                    trackedAvatars=len(self.avatars), spatialQueryPending=self.query_pending)
 
     def connect(self, password):
         s = self.sdk
@@ -433,6 +457,7 @@ class Bridge:
     def command(self, command):
         op = command.get('op')
         if op == 'world': return self.enter(command['world'])
+        if op == 'diagnostics': return self.diagnostics()
         if op == 'status': return dict(world=self.world, epoch=self.epoch, connected=self.connected)
         if op not in ('say', 'whisper', 'move', 'look'): raise ValueError('Unknown command.')
         if not self.connected: raise ValueError('Not connected to a world.')
@@ -454,6 +479,8 @@ class Bridge:
             if channel == 2 and not self.settings.get('worldGlobal'):
                 raise ValueError('World-global chat is not enabled.')
             self.sdk.call('aw_say_channel', text.encode(), channel)
+        self.sdk_accepted['whisper' if op == 'whisper' else ('global_' if channel == 2 else 'local')] += 1
+        self.last_send_at = time.monotonic()
         return dict(accepted=True)  # SDK acceptance is not a server delivery receipt.
 
 
