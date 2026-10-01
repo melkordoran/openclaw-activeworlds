@@ -1,0 +1,5 @@
+Axis.Sdk 597ed9ef6d494e8f9175caa3f2528027235a9418
+Axis.Platform 045731a484d5e35e706196ddfb0efa151da03e3e
+.NET SDK 10.0.401
+Runtime osx-arm64
+NativeLib Shared; Release

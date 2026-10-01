@@ -1,0 +1,14 @@
+{
+  "name": "@local/openclaw-activeworlds",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "description": "Activeworlds channel for OpenClaw using the native Axis SDK",
+  "engines": {"node": ">=24"},
+  "peerDependencies": {"openclaw": ">=2026.9.7 <2026.10.0"},
+  "openclaw": {
+    "extensions": ["./index.mjs"],
+    "channel": {"id": "activeworlds", "label": "Activeworlds", "blurb": "Native Axis SDK bridge on macOS"}
+  }
+}

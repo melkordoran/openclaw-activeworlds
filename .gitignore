@@ -1,0 +1,21 @@
+# Credentials and deployment data never belong in this repository.
+.env
+.env.*
+!.env.example
+.openclaw/
+secrets/
+account.json
+*.pem
+*.key
+*.p12
+# Generated dependencies, native artifacts, diagnostics.
+node_modules/
+native/
+__pycache__/
+*.py[cod]
+.venv/
+*.log
+*-activation-result.json
+.DS_Store
+dist/
+coverage/

@@ -1,0 +1,3 @@
+[submodule "vendor/axis-sdk"]
+	path = vendor/axis-sdk
+	url = https://gitlab.pp16.org/axis/sdk.git

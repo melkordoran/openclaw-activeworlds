@@ -1,0 +1,13 @@
+{
+  "channels": {
+    "activeworlds": {
+      "enabled": true,
+      "bridgePath": "/absolute/path/to/openclaw-activeworlds/bridge.py",
+      "pythonPath": "/usr/bin/python3",
+      "botName": "OpenClaw",
+      "allowFrom": ["12345"],
+      "controlFrom": ["12345"],
+      "requireMention": true
+    }
+  }
+}

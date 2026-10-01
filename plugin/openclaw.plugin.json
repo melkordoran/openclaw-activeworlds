@@ -1,0 +1,25 @@
+{
+  "id": "activeworlds",
+  "name": "Activeworlds",
+  "description": "Native macOS Axis text-chat bridge",
+  "channels": ["activeworlds"],
+  "activation": {"onStartup": true},
+  "configSchema": {"type": "object", "properties": {}, "additionalProperties": false},
+  "channelConfigs": {
+    "activeworlds": {
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "bridgePath": {"type": "string"},
+          "pythonPath": {"type": "string"},
+          "allowFrom": {"type": "array", "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}},
+          "controlFrom": {"type": "array", "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}},
+          "requireMention": {"type": "boolean"},
+          "botName": {"type": "string"}
+        }
+      }
+    }
+  }
+}
